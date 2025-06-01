@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import { Joti_One, Funnel_Display } from "next/font/google";
+import { Funnel_Display } from "next/font/google";
 import "./globals.css";
-
-const gameFont = Joti_One({
-  variable: "--font-default",
-  subsets: ["latin"],
-  weight: "400",
-});
 
 const defaultFont = Funnel_Display({
   variable: "--font-funnel-display",
@@ -26,11 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${gameFont.variable} ${defaultFont.className} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${defaultFont.className} antialiased`}>{children}</body>
     </html>
   );
 }
