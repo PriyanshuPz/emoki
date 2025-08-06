@@ -22,9 +22,7 @@
     "db:down": "bun run --filter server db:down"
   },
   "packageManager": "bun@1.2.19",
-  "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.14"
-  },
+  "dependencies": {},
   "devDependencies": {
     "turbo": "^2.5.4"
   }
