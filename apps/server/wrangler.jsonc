@@ -1,0 +1,6 @@
+{
+  "name": "emoki-server",
+  "compatibility_date": "2025-08-06",
+  "main": "src/index.ts",
+  "compatibility_flags": ["nodejs_compat"]
+}
