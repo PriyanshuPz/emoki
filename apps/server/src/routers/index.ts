@@ -1,6 +1,6 @@
 import { db } from "../db";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
-import z from "zod";
+import * as z from "zod";
 import { chits, vaults, VaultState } from "../db/schema";
 import { generateId } from "../lib/utils";
 import { and, eq, count } from "drizzle-orm";
