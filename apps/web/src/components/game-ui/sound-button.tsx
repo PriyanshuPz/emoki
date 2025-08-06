@@ -30,6 +30,8 @@ const buttonVariants = cva(
           "bg-indigo-500 text-primary-foreground hover:bg-indigo-500/90 border-indigo-600 border-b-4 active:border-b-2 active:translate-y-0.5",
         ghost:
           "bg-transparent text-slate-500 border-transparent border-0 hover:bg-slate-100 active:translate-y-0.5",
+        outline:
+          "bg-sky-500/15 text-sky-500 border-sky-300 border-2 hover:bg-sky-500/20 transition-all active:translate-y-0.5",
       },
       size: {
         default: "h-11 px-4 py-2",

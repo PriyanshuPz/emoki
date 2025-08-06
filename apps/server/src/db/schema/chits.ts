@@ -1,7 +1,8 @@
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
+import { relations } from "drizzle-orm";
 
-enum VaultState {
+export enum VaultState {
   Active = "active",
   Archived = "archived",
   Flagged = "flagged",
@@ -23,8 +24,8 @@ export const vault = pgTable("vault", {
 
   state: text("state").$type<VaultState>().notNull().default(VaultState.Active),
 
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
+  createdAt: timestamp("created_at").notNull().default(new Date()),
+  updatedAt: timestamp("updated_at").notNull().default(new Date()),
 });
 
 export const chit = pgTable("chit", {
@@ -40,6 +41,17 @@ export const chit = pgTable("chit", {
 
   state: text("state").$type<VaultState>().notNull().default(VaultState.Active),
 
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
+  createdAt: timestamp("created_at").notNull().default(new Date()),
+  updatedAt: timestamp("updated_at").notNull().default(new Date()),
 });
+
+export const vaultRelations = relations(vault, ({ many }) => ({
+  chits: many(chit),
+}));
+
+export const chitRelations = relations(chit, ({ one }) => ({
+  vault: one(vault, {
+    fields: [chit.vaultId],
+    references: [vault.id],
+  }),
+}));

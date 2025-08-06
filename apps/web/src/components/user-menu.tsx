@@ -37,9 +37,17 @@ export default function UserMenu() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/vaults">My Vaults</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/paper">Write Chit</Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Button
-            variant="destructive"
+            variant="danger"
             className="w-full"
             onClick={() => {
               authClient.signOut({

@@ -9,7 +9,6 @@ export default function EnterPage() {
   async function handleSignIn() {
     await authClient.signIn.social({
       provider: "github",
-      errorCallbackURL: "/problem",
       callbackURL: "/",
     });
   }

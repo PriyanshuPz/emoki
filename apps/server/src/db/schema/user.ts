@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -5,6 +6,7 @@ import {
   boolean,
   integer,
 } from "drizzle-orm/pg-core";
+import { vault } from "./chits";
 
 enum AccountStatus {
   Active = "active",
@@ -19,7 +21,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").notNull(),
   image: text("image"),
   username: text("username").notNull().unique(),
-  displayUsername: text("display_username").notNull().unique(),
+  displayUsername: text("display_username").notNull(),
 
   bio: text("bio"),
 
@@ -58,3 +60,13 @@ export const friendship = pgTable("friendship", {
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
+
+export const userRelations = relations(user, ({ many }) => ({
+  friendships: many(friendship),
+  vaults: many(vault),
+}));
+
+export const friendshipRelations = relations(friendship, ({ one }) => ({
+  user: one(user),
+  friend: one(user),
+}));

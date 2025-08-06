@@ -1,35 +1,66 @@
 "use client";
 
+import Link from "next/link";
 import { TiArchive, TiDownloadOutline, TiRefreshOutline } from "react-icons/ti";
 import { SoundButton } from "./sound-button";
+import VaultSelector from "./vault-selector";
+import { cn } from "@/lib/utils";
 
-export default function ActionButtons() {
+interface ActionButtonsProps {
+  content?: string;
+  onClear?: () => void;
+  onSave?: () => void;
+  isLoading?: boolean;
+}
+
+export default function ActionButtons({
+  content,
+  onClear,
+  onSave,
+  isLoading,
+}: ActionButtonsProps) {
+  const handleRefresh = () => {
+    if (isLoading) return;
+    onClear?.();
+  };
+
+  const hasContent = content?.trim();
+
   return (
-    <div className="fixed bottom-4 space-x-0 flex">
+    <div className="fixed bottom-8 space-x-1 flex">
       <SoundButton
         size="icon"
-        className="rounded-r-none rounded-l-xl w-16 h-16 transform transition-transform active:scale-90 shadow-lg"
-        variant="danger"
-        // soundType="error"
+        className="w-16 h-16 border-s-2 rounded-e-none rounded-s-2xl"
+        onClick={handleRefresh}
+        disabled={isLoading}
+        title="Clear chit"
       >
-        <TiRefreshOutline className="w-10 h-10 text-gray-100" />
+        <TiRefreshOutline className="w-8 h-8 text-gray-700" />
       </SoundButton>
+
       <SoundButton
         size="icon"
+        variant={hasContent ? "primary" : "outline"}
         soundType="complete"
-        className="rounded-none w-16 h-16 transform transition-transform active:scale-90 shadow-lg"
-        variant="super"
+        className={"w-16 h-16"}
+        onClick={onSave}
+        disabled={isLoading || !hasContent}
+        title="Quick save chit"
       >
-        <TiDownloadOutline className="w-8 h-8 text-gray-100" />
+        <TiDownloadOutline className="w-8 h-8" />
       </SoundButton>
-      <SoundButton
-        size="icon"
-        className="rounded-l-none rounded-r-xl w-16 h-16 transform transition-transform active:scale-90 shadow-lg"
-        variant="secondary"
-        soundType="click"
-      >
-        <TiArchive className="w-8 h-8 text-gray-100" />
-      </SoundButton>
+
+      <Link href="/vaults">
+        <SoundButton
+          size="icon"
+          className="w-16 h-16 rounded-s-none rounded-e-2xl"
+          soundType="click"
+          disabled={isLoading}
+          title="Manage vaults"
+        >
+          <TiArchive className="w-8 h-8 text-gray-700" />
+        </SoundButton>
+      </Link>
     </div>
   );
 }

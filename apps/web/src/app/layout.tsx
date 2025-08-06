@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "../index.css";
 import Providers from "@/components/providers";
+import { gameFont } from "@/lib/font";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body
+        className={`${geistSans.className} ${gameFont.variable} antialiased`}
+      >
         <Providers>
           <div className="grid grid-rows-[auto_1fr] h-svh">{children}</div>
         </Providers>
