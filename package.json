@@ -1,34 +1,25 @@
 {
   "name": "emoki",
-  "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --filter '*' check-types",
+    "dev:native": "bun run --filter native dev",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev",
+    "db:push": "bun run --filter server db:push",
+    "db:studio": "bun run --filter server db:studio",
+    "db:generate": "bun run --filter server db:generate",
+    "db:migrate": "bun run --filter server db:migrate",
+    "db:start": "bun run --filter server db:start",
+    "db:watch": "bun run --filter server db:watch",
+    "db:stop": "bun run --filter server db:stop",
+    "db:down": "bun run --filter server db:down"
   },
-  "dependencies": {
-    "@prisma/client": "^6.8.2",
-    "@radix-ui/react-slot": "^1.2.3",
-    "better-auth": "^1.2.8",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.511.0",
-    "next": "15.3.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-icons": "^5.5.0",
-    "tailwind-merge": "^3.3.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "prisma": "^6.8.2",
-    "tailwindcss": "^4",
-    "tw-animate-css": "^1.3.3",
-    "typescript": "^5"
-  }
+  "packageManager": "bun@1.2.19"
 }
