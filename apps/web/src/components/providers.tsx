@@ -19,7 +19,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         {children}
         <ReactQueryDevtools />
-        <VaultSelectorModal />
+        {/* <VaultSelectorModal /> */}
       </QueryClientProvider>
       <Toaster richColors position="top-left" />
     </ThemeProvider>
