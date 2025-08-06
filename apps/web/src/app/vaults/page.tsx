@@ -45,7 +45,7 @@ export default function VaultsPage() {
       onSuccess: () => {
         toast.success("Vault deleted successfully");
         queryClient.invalidateQueries({
-          queryKey: trpc.getVaultsWithCounts.pathKey(),
+          queryKey: trpc.getVaultsWithCounts.queryKey(),
         });
         setDeleteDialogOpen(false);
         setVaultToDelete(null);
