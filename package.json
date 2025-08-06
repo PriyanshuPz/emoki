@@ -24,5 +24,8 @@
   "packageManager": "bun@1.2.19",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4"
   }
 }
