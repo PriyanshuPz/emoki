@@ -1,12 +1,12 @@
 import { relations } from "drizzle-orm";
 import {
-  pgTable,
   text,
   timestamp,
   boolean,
   integer,
+  pgTable,
 } from "drizzle-orm/pg-core";
-import { vault } from "./chits";
+import { vaults } from "./chits";
 
 enum AccountStatus {
   Active = "active",
@@ -14,7 +14,7 @@ enum AccountStatus {
   Suspended = "suspended",
 }
 
-export const user = pgTable("user", {
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -39,34 +39,6 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-enum FriendShipStatus {
-  Pending = "pending",
-  Accepted = "accepted",
-  Declined = "declined",
-}
-
-export const friendship = pgTable("friendship", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  friendId: text("friend_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  status: text("status")
-    .$type<FriendShipStatus>()
-    .notNull()
-    .default(FriendShipStatus.Pending),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
-});
-
-export const userRelations = relations(user, ({ many }) => ({
-  friendships: many(friendship),
-  vaults: many(vault),
-}));
-
-export const friendshipRelations = relations(friendship, ({ one }) => ({
-  user: one(user),
-  friend: one(user),
+export const userRelations = relations(users, ({ many }) => ({
+  vaults: many(vaults),
 }));

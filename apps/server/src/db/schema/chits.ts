@@ -1,6 +1,6 @@
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./user";
 import { relations } from "drizzle-orm";
+import { users } from "./user";
 
 export enum VaultState {
   Active = "active",
@@ -10,12 +10,9 @@ export enum VaultState {
   Suspended = "suspended",
 }
 
-export const vault = pgTable("vault", {
+export const vaults = pgTable("vaults", {
   id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-
+  userId: text("user_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
 
@@ -28,16 +25,16 @@ export const vault = pgTable("vault", {
   updatedAt: timestamp("updated_at").notNull().default(new Date()),
 });
 
-export const chit = pgTable("chit", {
+export const chits = pgTable("chits", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
 
   vaultId: text("vault_id")
     .notNull()
-    .references(() => vault.id, { onDelete: "cascade" }),
+    .references(() => vaults.id, { onDelete: "cascade" }),
 
   state: text("state").$type<VaultState>().notNull().default(VaultState.Active),
 
@@ -45,13 +42,17 @@ export const chit = pgTable("chit", {
   updatedAt: timestamp("updated_at").notNull().default(new Date()),
 });
 
-export const vaultRelations = relations(vault, ({ many }) => ({
-  chits: many(chit),
+export const vaultRelations = relations(vaults, ({ many, one }) => ({
+  chits: many(chits),
+  user: one(users, {
+    fields: [vaults.userId],
+    references: [users.id],
+  }),
 }));
 
-export const chitRelations = relations(chit, ({ one }) => ({
-  vault: one(vault, {
-    fields: [chit.vaultId],
-    references: [vault.id],
+export const chitRelations = relations(chits, ({ one }) => ({
+  vault: one(vaults, {
+    fields: [chits.vaultId],
+    references: [vaults.id],
   }),
 }));

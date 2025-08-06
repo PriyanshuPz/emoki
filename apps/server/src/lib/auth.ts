@@ -9,6 +9,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: schema,
+    usePlural: true,
   }),
   databaseHooks: {
     user: {
@@ -54,13 +55,13 @@ export const auth = betterAuth({
 
 async function setupNewAccount(userId: string) {
   try {
-    const vault = await db.query.vault.findFirst({
+    const vault = await db.query.vaults.findFirst({
       where: (vaults, { eq, and }) =>
         and(eq(vaults.userId, userId), eq(vaults.isDefault, true)),
     });
 
     if (!vault) {
-      await db.insert(schema.vault).values({
+      await db.insert(schema.vaults).values({
         id: generateId("vault"),
         name: "Personal Vault",
         userId: userId,

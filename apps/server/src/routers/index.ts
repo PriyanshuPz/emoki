@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import z from "zod";
-import { chit, vault, VaultState } from "@/db/schema";
+import { chits, vaults, VaultState } from "@/db/schema";
 import { generateId } from "@/lib/utils";
 import { and, eq, count } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -13,96 +13,90 @@ export const appRouter = router({
     }
     return "OK - Not authenticated";
   }),
-  privateData: protectedProcedure.query(({ ctx }) => {
-    return {
-      message: "This is private",
-      user: ctx.session.user,
-    };
-  }),
 
   fetchVaults: protectedProcedure.query(async ({ ctx }) => {
-    const vaults = await db.query.vault.findMany({
-      where: (vault, { eq }) =>
+    const vaults = await db.query.vaults.findMany({
+      where: (vaults, { eq }) =>
         and(
-          eq(vault.userId, ctx.session.user.id),
-          eq(vault.state, VaultState.Active)
+          eq(vaults.userId, ctx.session.user.id),
+          eq(vaults.state, VaultState.Active)
         ),
     });
 
     return [
-      ...vaults.map((vault) => ({
-        id: vault.id,
-        name: vault.name,
-        description: vault.description,
+      ...vaults.map((vaults) => ({
+        id: vaults.id,
+        name: vaults.name,
+        description: vaults.description,
       })),
     ];
   }),
 
-  // Get all vaults with chit counts
+  // Get all vaultss with chits counts
   getVaultsWithCounts: protectedProcedure.query(async ({ ctx }) => {
-    const vaultsWithCounts = await db
+    const vaultssWithCounts = await db
       .select({
-        id: vault.id,
-        name: vault.name,
-        description: vault.description,
-        isDefault: vault.isDefault,
-        isPublic: vault.isPublic,
-        createdAt: vault.createdAt,
-        chitCount: count(chit.id),
+        id: vaults.id,
+        name: vaults.name,
+        description: vaults.description,
+        isDefault: vaults.isDefault,
+        isPublic: vaults.isPublic,
+        createdAt: vaults.createdAt,
+        chitCount: count(chits.id),
       })
-      .from(vault)
+      .from(vaults)
       .leftJoin(
-        chit,
-        and(eq(chit.vaultId, vault.id), eq(chit.state, VaultState.Active))
+        chits,
+        and(eq(chits.vaultId, vaults.id), eq(chits.state, VaultState.Active))
       )
       .where(
         and(
-          eq(vault.userId, ctx.session.user.id),
-          eq(vault.state, VaultState.Active)
+          eq(vaults.userId, ctx.session.user.id),
+          eq(vaults.state, VaultState.Active)
         )
       )
-      .groupBy(vault.id)
-      .orderBy(vault.createdAt);
+      .groupBy(vaults.id)
+      .orderBy(vaults.createdAt);
 
-    return vaultsWithCounts;
+    return vaultssWithCounts;
   }),
 
-  // Get vault with its chits
+  // Get vaults with its chitss
   getVaultWithChits: protectedProcedure
     .input(z.object({ vaultId: z.string() }))
     .query(async ({ input, ctx }) => {
-      const vaultData = await db.query.vault.findFirst({
-        where: (vault, { eq, and }) =>
+      const vaultsData = await db.query.vaults.findFirst({
+        where: (vaults, { eq, and }) =>
           and(
-            eq(vault.id, input.vaultId),
-            eq(vault.userId, ctx.session.user.id),
-            eq(vault.state, VaultState.Active)
+            eq(vaults.id, input.vaultId),
+            eq(vaults.userId, ctx.session.user.id),
+            eq(vaults.state, VaultState.Active)
           ),
         with: {
           chits: {
-            where: (chit, { eq }) => eq(chit.state, VaultState.Active),
-            orderBy: (chit, { asc }) => [asc(chit.createdAt)],
+            where: (chits, { eq }) => eq(chits.state, VaultState.Active),
+            orderBy: (chits, { asc }) => [asc(chits.createdAt)],
           },
         },
       });
 
-      if (!vaultData) {
+      if (!vaultsData) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Vault not found",
+          message: "vaults not found",
         });
       }
 
       return {
         vault: {
-          id: vaultData.id,
-          name: vaultData.name,
-          description: vaultData.description,
-          isDefault: vaultData.isDefault,
-          isPublic: vaultData.isPublic,
-          createdAt: vaultData.createdAt,
+          id: vaultsData.id,
+          name: vaultsData.name,
+          description: vaultsData.description,
+          isDefault: vaultsData.isDefault,
+          isPublic: vaultsData.isPublic,
+          createdAt: vaultsData.createdAt,
         },
-        chits: vaultData.chits.map((c) => ({
+        chits: vaultsData.chits.map((c) => ({
           id: c.id,
           content: c.content,
           createdAt: c.createdAt,
@@ -111,18 +105,18 @@ export const appRouter = router({
       };
     }),
 
-  // Create a new vault
+  // Create a new vaults
   createVault: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(1, "Vault name is required").max(100),
+        name: z.string().min(1, "vaults name is required").max(100),
         description: z.string().max(500).optional(),
         isPublic: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const vaultId = generateId("vault");
-      await db.insert(vault).values({
+      const vaultId = generateId("vaults");
+      await db.insert(vaults).values({
         id: vaultId,
         userId: ctx.session.user.id,
         name: input.name,
@@ -134,19 +128,19 @@ export const appRouter = router({
       return { success: true, vaultId };
     }),
 
-  // Update vault
+  // Update vaults
   updateVault: protectedProcedure
     .input(
       z.object({
         vaultId: z.string(),
-        name: z.string().min(1, "Vault name is required").max(100),
+        name: z.string().min(1, "vaults name is required").max(100),
         description: z.string().max(500).optional(),
         isPublic: z.boolean(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       await db
-        .update(vault)
+        .update(vaults)
         .set({
           name: input.name,
           description: input.description,
@@ -155,77 +149,77 @@ export const appRouter = router({
         })
         .where(
           and(
-            eq(vault.id, input.vaultId),
-            eq(vault.userId, ctx.session.user.id),
-            eq(vault.state, VaultState.Active)
+            eq(vaults.id, input.vaultId),
+            eq(vaults.userId, ctx.session.user.id),
+            eq(vaults.state, VaultState.Active)
           )
         );
 
       return { success: true };
     }),
 
-  // Delete vault (soft delete by setting state to deleted)
+  // Delete vaults (soft delete by setting state to deleted)
   deleteVault: protectedProcedure
     .input(z.object({ vaultId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      // Check if it's the default vault
-      const vaultToDelete = await db.query.vault.findFirst({
-        where: (vault, { eq, and }) =>
+      // Check if it's the default vaults
+      const vaultsToDelete = await db.query.vaults.findFirst({
+        where: (vaults, { eq, and }) =>
           and(
-            eq(vault.id, input.vaultId),
-            eq(vault.userId, ctx.session.user.id),
-            eq(vault.state, VaultState.Active)
+            eq(vaults.id, input.vaultId),
+            eq(vaults.userId, ctx.session.user.id),
+            eq(vaults.state, VaultState.Active)
           ),
         columns: { isDefault: true },
       });
 
-      if (!vaultToDelete) {
+      if (!vaultsToDelete) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Vault not found",
+          message: "vaults not found",
         });
       }
 
-      if (vaultToDelete.isDefault) {
+      if (vaultsToDelete.isDefault) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Cannot delete the default vault",
+          message: "Cannot delete the default vaults",
         });
       }
 
-      // Soft delete the vault and its chits
+      // Soft delete the vaults and its chitss
       await db
-        .update(vault)
+        .update(vaults)
         .set({ state: VaultState.Deleted, updatedAt: new Date() })
-        .where(eq(vault.id, input.vaultId));
+        .where(eq(vaults.id, input.vaultId));
 
       await db
-        .update(chit)
+        .update(chits)
         .set({ state: VaultState.Deleted, updatedAt: new Date() })
-        .where(eq(chit.vaultId, input.vaultId));
+        .where(eq(chits.vaultId, input.vaultId));
 
       return { success: true };
     }),
 
-  // Delete a chit
+  // Delete a chits
   deleteChit: protectedProcedure
     .input(z.object({ chitId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await db
-        .update(chit)
+        .update(chits)
         .set({ state: VaultState.Deleted, updatedAt: new Date() })
         .where(
           and(
-            eq(chit.id, input.chitId),
-            eq(chit.userId, ctx.session.user.id),
-            eq(chit.state, VaultState.Active)
+            eq(chits.id, input.chitId),
+            eq(chits.userId, ctx.session.user.id),
+            eq(chits.state, VaultState.Active)
           )
         );
 
       return { success: true };
     }),
 
-  // Transfer chit to another vault
+  // Transfer chits to another vaults
   transferChit: protectedProcedure
     .input(
       z.object({
@@ -234,33 +228,33 @@ export const appRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Verify the target vault belongs to the user
-      const targetVault = await db.query.vault.findFirst({
-        where: (vault, { eq, and }) =>
+      // Verify the target vaults belongs to the user
+      const targetvaults = await db.query.vaults.findFirst({
+        where: (vaults, { eq, and }) =>
           and(
-            eq(vault.id, input.targetVaultId),
-            eq(vault.userId, ctx.session.user.id),
-            eq(vault.state, VaultState.Active)
+            eq(vaults.id, input.targetVaultId),
+            eq(vaults.userId, ctx.session.user.id),
+            eq(vaults.state, VaultState.Active)
           ),
         columns: { id: true },
       });
 
-      if (!targetVault) {
+      if (!targetvaults) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Target vault not found",
+          message: "Target vaults not found",
         });
       }
 
-      // Transfer the chit
+      // Transfer the chits
       await db
-        .update(chit)
+        .update(chits)
         .set({ vaultId: input.targetVaultId, updatedAt: new Date() })
         .where(
           and(
-            eq(chit.id, input.chitId),
-            eq(chit.userId, ctx.session.user.id),
-            eq(chit.state, VaultState.Active)
+            eq(chits.id, input.chitId),
+            eq(chits.userId, ctx.session.user.id),
+            eq(chits.state, VaultState.Active)
           )
         );
 
@@ -279,37 +273,37 @@ export const appRouter = router({
       try {
         let vaultIdToUse = vaultId;
         if (!vaultIdToUse) {
-          // If no vaultId is provided, use the first vault of the user
-          const vaults = await db.query.vault.findMany({
-            where: (vault, { eq }) =>
+          // If no vaultId is provided, use the first vaults of the user
+          const vaultss = await db.query.vaults.findMany({
+            where: (vaults, { eq }) =>
               and(
-                eq(vault.userId, ctx.session.user.id),
-                eq(vault.isDefault, true)
+                eq(vaults.userId, ctx.session.user.id),
+                eq(vaults.isDefault, true)
               ),
           });
-          if (vaults.length > 0) {
-            vaultIdToUse = vaults[0].id;
+          if (vaultss.length > 0) {
+            vaultIdToUse = vaultss[0].id;
           } else {
-            throw new Error("No vaults found for the user");
+            throw new Error("No vaultss found for the user");
           }
         }
         if (!content || content.trim() === "") {
           throw new Error("Content cannot be empty");
         }
 
-        const newChit = await db.insert(chit).values({
-          id: generateId("chit"),
+        const newchits = await db.insert(chits).values({
+          id: generateId("chits"),
           content,
           vaultId: vaultIdToUse,
           userId: ctx.session.user.id,
         });
 
         return {
-          message: "Chit saved successfully",
+          message: "chits saved successfully",
         };
       } catch (error) {
-        console.error("Error saving chit:", error);
-        throw new Error("Failed to save chit");
+        console.error("Error saving chits:", error);
+        throw new Error("Failed to save chits");
       }
     }),
 });
