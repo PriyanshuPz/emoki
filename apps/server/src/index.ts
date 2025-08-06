@@ -33,7 +33,7 @@ app.use(
 );
 
 app.get("/", (c) => {
-  const clientURL = process.env.CORS_ORIGIN || "http://localhost:3001";
+  const clientURL = process.env.CORS_ORIGIN || "http://localhost:3000";
   // redirect to the client URL
   if (c.req.raw.url === "/") {
     return c.redirect(clientURL);
@@ -43,4 +43,7 @@ app.get("/", (c) => {
   return c.text("Welcome to the Emoki API server!");
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  port: process.env.PORT || 3001,
+};
